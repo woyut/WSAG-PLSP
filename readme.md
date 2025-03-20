@@ -40,13 +40,13 @@ Our trained model can be found [here](https://drive.google.com/drive/folders/1Ja
 To evaluate the trained model, run:
 
 ```
-python eval.py --config configs/test_seen.yaml
+python eval.py --config configs/seen_test.yaml
 ```
 
 or
 
 ```
-python eval.py --config configs/test_unseen.yaml
+python eval.py --config configs/unseen_test.yaml
 ```
 
 Please modify the paths in the .yaml files to the locations of the datasets and the trained model weights.
