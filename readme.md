@@ -51,6 +51,30 @@ python eval.py --config configs/unseen_test.yaml
 
 Please modify the paths in the .yaml files to the locations of the datasets and the trained model weights.
 
+## Pesudo Label Generation
+
+To generate the pseudo labels for the egocentric images by yourself, please clone [grounded-segment-any-parts](https://github.com/Saiyan-World/grounded-segment-any-parts) and copy `codes/PL_generation/get_PL.py` to it. After preparing the environment following the instructions of grounded-segment-any-parts, you can run
+```
+python get_PL.py --split_name Seen/trainset --AGD_dir /path/to/AGD20K --output_name PL
+```
+and
+```
+python get_PL.py --split_name Unseen/trainset --AGD_dir /path/to/AGD20K --output_name PL
+```
+to generate the pseudo labels for the seen/unseen split. The generated masks will be saved under `AGD20K/Seen/trainset/PL` and `AGD20K/Unseen/trainset/PL`.
+
+Similarly, you can copy `codes/PL_generation/get_obj_box.py` to grounded-segment-any-parts and generate the object bounding boxes for egocentric and exocentric images by
+```
+python get_obj_box.py --split_name Seen/trainset --view_name egocentric --AGD_dir /path/to/AGD20K --save_file_name ego_seen_box.pth
+python get_obj_box.py --split_name Unseen/trainset --view_name egocentric --AGD_dir /path/to/AGD20K --save_file_name ego_unseen_box.pth
+python get_obj_box.py --split_name Seen/trainset --view_name exocentric --AGD_dir /path/to/AGD20K --save_file_name exo_seen_box.pth
+python get_obj_box.py --split_name Unseen/trainset --view_name exocentric --AGD_dir /path/to/AGD20K --save_file_name exo_unseen_box.pth
+```
+
+## Pseudo Label Refinement
+
+coming soon
+
 
 ## Acknowledgement
 
