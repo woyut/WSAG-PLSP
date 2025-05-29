@@ -73,9 +73,70 @@ python get_obj_box.py --split_name Unseen/trainset --view_name exocentric --AGD_
 
 ## Pseudo Label Refinement
 
-coming soon
+To refine the pseudo labels by yourself, you may follow the following steps.
+
+**step 1**: generate object masks for the training images
+
+Similar to the "Pesudo Label Generation" part, please clone [grounded-segment-any-parts](https://github.com/Saiyan-World/grounded-segment-any-parts) and prepare its environment. Then, copy `codes/PL_refinement/get_obj_mask.py` to it and run:
+```
+python get_obj_mask.py --split_name Seen/trainset --view_name egocentric --AGD_dir /path/to/AGD20K --output_name whole_obj_mask_ego
+python get_obj_mask.py --split_name Unseen/trainset --view_name egocentric --AGD_dir /path/to/AGD20K --output_name whole_obj_mask_ego
+python get_obj_mask.py --split_name Seen/trainset --view_name exocentric --AGD_dir /path/to/AGD20K --output_name whole_obj_mask_exo
+python get_obj_mask.py --split_name Unseen/trainset --view_name exocentric --AGD_dir /path/to/AGD20K --output_name whole_obj_mask_exo
+```
+The generated masks will be saved under `AGD20K/Seen/trainset/whole_obj_mask_ego`, `AGD20K/Unseen/trainset/whole_obj_mask_ego`, `AGD20K/Seen/trainset/whole_obj_mask_exo`, `AGD20K/Unseen/trainset/whole_obj_mask_exo`. They will be used during the label refinement training and inference stages.
+
+**step 2**: generate SAM priors
+
+Please copy `codes/PL_refinement/SAM_auto.py` to grounded-segment-any-parts, and modify the `sam_checkpoint` and `data_dir` in it to the correct paths. Then you can run:
+```
+python SAM_auto.py
+```
+It will generate the SAM's image parsing results for each egocentric image in the Seen split, which will be saved under `AGD20K/Seen/trainset/SAM_masks_pps8`. You can also change `split` from "Seen" to "Unseen" to generate the results for the Unseen split. These results will be used for post-processing the refined labels.
+
+**step 3**: PL refinement training
+
+Run the following commands to perform training on the seen/unseen split.
+```
+python PL_refinement/pl_refine_train.py --config PL_refinement/configs/pl_refine_seen.yaml --seed 1
+python PL_refinement/pl_refine_train.py --config PL_refinement/configs/pl_refine_unseen.yaml --seed 1
+```
+Please modify the paths in the .yaml files to the locations of the datasets and pre-trained ViT weights.
+
+**step 4**: PL refinement inference
+
+Run the following commands to generated refined pseudo labels using the trained model in step 2.
+```
+python PL_refinement/pl_refine_inf.py --config PL_refinement/configs/pl_refine_seen_inf.yaml
+python PL_refinement/pl_refine_inf.py --config PL_refinement/configs/pl_refine_unseen_inf.yaml
+```
+The generated masks will be saved under `AGD20K/Seen/trainset/{save_name}`, `AGD20K/Unseen/trainset/{save_name}`, where `save_name` is set in the .yaml files.
+
+**step 5**: post-process with SAM priors
+
+Please check `codes/PL_refinement/SAM_postprocess.py` and change the `dir` to the path of AGD20K. Also, change `mod_PL_dir` to the `save_name` in step 4, and change `res_dir` to a desired name for saving the post-processed pseudo labels. Then you can run
+```
+python PL_refinement/SAM_postprocess.py
+```
+to generate the post-processed pseudo labels under `AGD20K/Seen/trainset/{res_dir}`. You can uncomment line 14-17 to do the same thing for the unseen split.
+
+Finally, the pseudo labels under `AGD20K/Seen/trainset/{res_dir}` and `AGD20K/Unseen/trainset/{res_dir}` can be used for the major WSAG training process.
 
 
 ## Acknowledgement
 
 We sincerely thank the codebase of [CLIP](https://github.com/openai/CLIP/), [SAM](https://github.com/facebookresearch/segment-anything/tree/main), [LOCATE](https://github.com/Reagan1311/LOCATE), and [grounded-segment-any-parts](https://github.com/Saiyan-World/grounded-segment-any-parts).
+
+## Citation
+
+Please kindly cite the following paper if you find this project useful:
+```
+@inproceedings{
+xu2025weaklysupervised,
+title={Weakly-Supervised Affordance Grounding Guided by Part-Level Semantic Priors},
+author={Peiran Xu and Yadong MU},
+booktitle={The Thirteenth International Conference on Learning Representations},
+year={2025},
+url={https://openreview.net/forum?id=0823rvTIhs}
+}
+```

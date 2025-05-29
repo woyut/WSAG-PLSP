@@ -1,0 +1,54 @@
+work_dir: &work_dir PL_refinement/logs/unseen
+deterministic: False
+
+data_dir: /path/to/AGD20K # TODO
+obj_mask_dir_name: whole_obj_mask_exo
+
+pred_mask_temperature: 1.
+
+load:
+  encoder_ckpt: ViT-B-16.pt # TODO
+  all_ckpt: # leave blank for training
+
+batch_size: 1 # real batch size = batch_size * accum_iter
+img_size: 224
+split_type: Unseen
+num_exo: 3
+
+optimizer:
+  lr: 0.0001
+  lr_encoder_coeff: 0.1
+  betas:
+    - 0.9
+    - 0.95
+  wd: 0.01
+
+  max_iter: 5000000
+  lr_step:  5000000
+  lr_gamma: 0.1
+  num_epochs: 20
+  save_epoch: 2
+  accum_iter: 20
+  sche_type: step
+
+model:
+  encoder_type: CLIP
+  encoder_params:
+    width: 768
+    layers: 12
+    heads: 12
+    output_dim: 512
+  decoder_embed_dim: 512
+
+  pred_model_type: SAM
+  pred_decoder_args:
+    mlp_dim: 2048
+    depth: 2
+    use_up: 2
+    use_additional_token: True
+    conv_first: True
+
+  margin: 0.1
+
+loss:
+  CLIP_align_coeff: 4.
